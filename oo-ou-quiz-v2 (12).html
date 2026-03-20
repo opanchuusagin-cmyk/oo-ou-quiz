@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>○○王クイズ 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;700&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #1a0a00;
+  --paper: #f5e6c8;
+  --paper2: #ede0b0;
+  --red: #c0141a;
+  --red2: #8b0000;
+  --gold: #c8960c;
+  --gold2: #f0c040;
+  --navy: #0a1a3a;
+  --ink: #1a0a00;
+  --dim: #8a6a40;
+  --white: #fdf6e3;
+  --scan: rgba(0,0,0,0.03);
+
+  --team-a: #c0141a;
+  --team-b: #0a4a8a;
+  --team-c: #1a6a1a;
+  --team-d: #8a4a00;
+  --team-e: #6a0a6a;
+  --team-f: #0a6a6a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'DotGothic16', monospace;
+  min-height: 100vh;
+  overflow: hidden;
+  cursor: default;
+  user-select: none;
+}
+
+/* ── CRT scanlines ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    var(--scan) 0px, var(--scan) 1px,
+    transparent 1px, transparent 3px
+  );
+  pointer-events: none; z-index: 100;
+}
+
+/* ── TV outer frame ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  border: 24px solid #2a1a0a;
+  box-shadow: inset 0 0 60px rgba(0,0,0,0.8), 0 0 0 4px #4a3020;
+  pointer-events: none; z-index: 99;
+  border-radius: 24px;
+}
+
+/* ── SCREEN (paper-like bg) ── */
+.screen {
+  position: fixed; inset: 24px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+  padding: 32px 80px 32px 220px;
+  text-align: center;
+  background: var(--paper);
+  background-image:
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(180,160,120,0.15) 39px, rgba(180,160,120,0.15) 40px),
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(180,160,120,0.15) 39px, rgba(180,160,120,0.15) 40px);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.screen::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.15) 100%);
+  pointer-events: none;
+}
+.screen.active { opacity: 1; pointer-events: all; }
+
+/* ── PROGRESS BAR ── */
+.progress-bar {
+  position: fixed; top: 24px; left: 24px; right: 24px; height: 6px;
+  background: rgba(0,0,0,0.2);
+  z-index: 101; border-radius: 0;
+}
+.progress-fill {
+  height: 100%; background: var(--red);
+  transition: width 0.5s ease;
+  position: relative;
+}
+.progress-fill::after {
+  content: '▶';
+  position: absolute; right: -8px; top: -6px;
+  font-size: 14px; color: var(--red);
+}
+
+/* ── SCORES SIDEBAR ── */
+.scores-bar {
+  position: fixed; right: 24px; top: 24px; bottom: 24px;
+  width: 68px;
+  background: var(--navy);
+  border: 3px solid var(--gold);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px; z-index: 97; padding: 16px 0;
+  border-radius: 0;
+}
+.scores-bar::before {
+  content: 'SCORE';
+  position: absolute; top: 8px;
+  font-size: 9px; color: var(--gold2); letter-spacing: 0.15em;
+  font-family: 'DotGothic16', monospace;
+}
+.score-chip {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  width: 54px;
+}
+.score-chip-name { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; }
+.score-chip-num {
+  font-size: 26px; font-weight: 900; line-height: 1;
+  font-family: 'Kaisei Decol', serif;
+}
+.score-chip-bar {
+  width: 38px; height: 4px;
+  background: rgba(255,255,255,0.1); overflow: hidden;
+}
+.score-chip-fill { height: 100%; transition: width 0.5s ease; }
+.chip-a .score-chip-name,.chip-a .score-chip-num { color: #ff6666; }
+.chip-a .score-chip-fill { background: #ff6666; }
+.chip-b .score-chip-name,.chip-b .score-chip-num { color: #6699ff; }
+.chip-b .score-chip-fill { background: #6699ff; }
+.chip-c .score-chip-name,.chip-c .score-chip-num { color: #66cc66; }
+.chip-c .score-chip-fill { background: #66cc66; }
+.chip-d .score-chip-name,.chip-d .score-chip-num { color: #ffaa44; }
+.chip-d .score-chip-fill { background: #ffaa44; }
+.chip-e .score-chip-name,.chip-e .score-chip-num { color: #dd88dd; }
+.chip-e .score-chip-fill { background: #dd88dd; }
+.chip-f .score-chip-name,.chip-f .score-chip-num { color: #44dddd; }
+.chip-f .score-chip-fill { background: #44dddd; }
+
+/* ── HISTORY PANEL ── */
+.score-history {
+  position: fixed; left: 24px; top: 24px; bottom: 24px; width: 188px;
+  background: var(--navy);
+  border: 3px solid var(--gold);
+  display: flex; flex-direction: column;
+  z-index: 97; padding: 16px 0;
+  transform: translateX(-188px);
+  transition: transform 0.3s ease;
+}
+.score-history.open { transform: translateX(0); }
+.score-history-title {
+  font-size: 10px; letter-spacing: 0.2em; color: var(--gold2);
+  font-weight: 700; padding: 0 12px 10px;
+  border-bottom: 1px solid rgba(200,150,12,0.3);
+  margin-bottom: 8px;
+}
+.history-list {
+  flex: 1; overflow-y: auto; padding: 0 8px;
+  display: flex; flex-direction: column; gap: 5px;
+}
+.history-item {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 6px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(200,150,12,0.2);
+  font-size: 11px; flex-wrap: wrap;
+}
+.hi-q { color: var(--gold2); flex-shrink: 0; font-size: 10px; }
+.hi-name { flex: 1; color: #eee; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hi-team { font-size: 9px; font-weight: 900; padding: 1px 5px; flex-shrink: 0; }
+.hi-undo {
+  background: none; border: 1px solid rgba(255,100,100,0.4);
+  color: #ff8888; cursor: pointer; font-size: 10px;
+  padding: 1px 5px; transition: all 0.2s; flex-shrink: 0;
+}
+.hi-undo:hover { background: rgba(255,100,100,0.2); }
+
+.history-toggle {
+  position: fixed; left: 24px; top: 50%; transform: translateY(-50%);
+  background: var(--navy);
+  border: 2px solid var(--gold); border-left: none;
+  padding: 12px 6px; cursor: pointer; z-index: 98;
+  font-family: 'DotGothic16', monospace;
+  font-size: 10px; font-weight: 700; color: var(--gold2);
+  letter-spacing: 0.15em; writing-mode: vertical-lr;
+  transition: left 0.3s ease;
+}
+.history-toggle.open { left: 212px; }
+
+/* ── CLICK HINT ── */
+.click-hint {
+  position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; color: var(--dim); letter-spacing: 0.2em;
+  animation: blink 1.2s step-end infinite;
+  z-index: 101;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── NAV BTNS ── */
+.nav-btn {
+  position: fixed;
+  background: var(--navy);
+  border: 2px solid var(--gold);
+  color: var(--gold2);
+  padding: 8px 16px; font-size: 11px; cursor: pointer;
+  font-family: 'DotGothic16', monospace; font-weight: 700;
+  z-index: 101; transition: all 0.2s; letter-spacing: 0.1em;
+}
+.nav-btn:hover { background: var(--gold); color: var(--navy); }
+.reset-btn { bottom: 40px; right: 100px; }
+.back-btn  { bottom: 40px; left: 220px; }
+
+/* ═══ S0: チーム発表 ═══ */
+#s-teams { padding: 24px 90px 24px 210px; }
+.teams-title {
+  font-family: 'Kaisei Decol', serif;
+  font-size: clamp(24px, 3.5vw, 40px);
+  color: var(--red2);
+  margin-bottom: 28px;
+  letter-spacing: 0.1em;
+  text-decoration: underline double var(--red2);
+  text-underline-offset: 6px;
+}
+.teams-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px; max-width: 860px; width: 100%;
+}
+.team-card {
+  border: 3px solid var(--ink);
+  padding: 14px 12px;
+  background: var(--white);
+  position: relative;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.team-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 6px;
+}
+.ta::before { background: var(--team-a); }
+.tb::before { background: var(--team-b); }
+.tc::before { background: var(--team-c); }
+.td::before { background: var(--team-d); }
+.te::before { background: var(--team-e); }
+.tf::before { background: var(--team-f); }
+.team-label { font-size: 9px; letter-spacing: 0.25em; color: var(--dim); margin-bottom: 4px; }
+.team-name-big {
+  font-family: 'Kaisei Decol', serif;
+  font-size: 22px; margin-bottom: 10px; font-weight: 700;
+}
+.ta .team-name-big { color: var(--team-a); }
+.tb .team-name-big { color: var(--team-b); }
+.tc .team-name-big { color: var(--team-c); }
+.td .team-name-big { color: var(--team-d); }
+.te .team-name-big { color: var(--team-e); }
+.tf .team-name-big { color: var(--team-f); }
+.team-members { display: flex; flex-wrap: wrap; gap: 4px; }
+.member-pill {
+  border: 1px solid var(--dim);
+  padding: 2px 8px; font-size: 11px; font-weight: 700; color: var(--ink);
+  background: var(--paper2);
+}
+.member-pill.target { background: #fff0c0; border-color: var(--gold); color: var(--red2); }
+
+/* ═══ S1: TITLE ═══ */
+.title-crown { font-size: 60px; animation: float 2s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.title-big {
+  font-family: 'Kaisei Decol', serif;
+  font-size: clamp(80px, 13vw, 150px);
+  line-height: 0.95; color: var(--red2);
+  text-shadow: 4px 4px 0 var(--gold2), 8px 8px 0 rgba(0,0,0,0.2);
+  margin: 12px 0;
+  letter-spacing: 0.05em;
+}
+.title-sub {
+  font-size: 14px; letter-spacing: 0.3em; color: var(--dim);
+  border-top: 2px solid var(--dim); border-bottom: 2px solid var(--dim);
+  padding: 8px 24px;
+}
+
+/* ═══ S2: TARGET ═══ */
+.q-num-badge {
+  font-size: 12px; letter-spacing: 0.3em; color: var(--dim);
+  margin-bottom: 24px;
+  border: 2px solid var(--dim); padding: 4px 20px;
+}
+.target-label { font-size: 13px; color: var(--dim); letter-spacing: 0.15em; margin-bottom: 12px; }
+.target-name {
+  font-family: 'Kaisei Decol', serif;
+  font-size: clamp(72px, 13vw, 148px);
+  line-height: 1; color: var(--red2);
+  text-shadow: 3px 3px 0 var(--gold2), 6px 6px 0 rgba(0,0,0,0.15);
+  animation: namePop 0.4s cubic-bezier(0.175,0.885,0.32,1.275) both;
+}
+@keyframes namePop { 0%{transform:scale(0.5) rotate(-3deg);opacity:0} 100%{transform:scale(1) rotate(0);opacity:1} }
+.target-team-badge {
+  margin-top: 18px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 20px;
+  font-size: 13px; font-weight: 700;
+  border: 2px solid; background: var(--white);
+}
+
+/* ═══ S3: QUESTION ═══ */
+.q-label { font-size: 11px; letter-spacing: 0.3em; color: var(--dim); margin-bottom: 28px; }
+.question-text {
+  font-family: 'Kaisei Decol', serif;
+  font-size: clamp(36px, 5.5vw, 68px);
+  line-height: 1.5; color: var(--ink);
+  max-width: 760px;
+  animation: fadeUp 0.4s ease both;
+  border-left: 6px solid var(--red2);
+  padding-left: 20px; text-align: left;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+/* ═══ S4: VIDEO ═══ */
+.video-wrapper {
+  width: 100%; max-width: 820px; aspect-ratio: 16/9;
+  background: #000; border: 4px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+  position: relative; overflow: hidden;
+}
+.video-wrapper video { width: 100%; height: 100%; object-fit: contain; display: none; }
+.video-wrapper.loaded video { display: block; }
+.video-drop-zone {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; cursor: pointer; background: #1a1a1a;
+}
+.video-wrapper.loaded .video-drop-zone { display: none; }
+.video-drop-icon { font-size: 48px; }
+.video-drop-text { font-size: 14px; color: #aaa; }
+.video-drop-sub { font-size: 11px; color: #666; }
+input[type=file] { display: none; }
+.video-person-name {
+  font-family: 'Kaisei Decol', serif;
+  font-size: 20px; color: var(--red2);
+  margin-bottom: 12px; letter-spacing: 0.1em;
+}
+
+/* ═══ S5: ANSWER ═══ */
+.answer-reveal-label {
+  font-size: 11px; letter-spacing: 0.35em; color: var(--dim);
+  margin-bottom: 20px; border-bottom: 1px solid var(--dim); padding-bottom: 8px;
+}
+.answer-text {
+  font-family: 'Kaisei Decol', serif;
+  font-size: clamp(42px, 6.5vw, 80px);
+  color: var(--red2);
+  line-height: 1.3; max-width: 660px;
+  text-shadow: 2px 2px 0 var(--gold2);
+  animation: answerDrop 0.5s cubic-bezier(0.175,0.885,0.32,1.275) both;
+  margin-bottom: 36px;
+  border: 3px solid var(--red2); padding: 8px 24px;
+  background: var(--white);
+  outline: none;
+}
+@keyframes answerDrop { 0%{transform:translateY(-30px) scale(0.85);opacity:0} 100%{transform:translateY(0) scale(1);opacity:1} }
+.point-section { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.point-label { font-size: 11px; letter-spacing: 0.2em; color: var(--dim); }
+.team-buttons { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.team-btn {
+  padding: 10px 20px; border: 3px solid;
+  cursor: pointer; font-family: 'DotGothic16', monospace;
+  font-size: 14px; font-weight: 900; background: var(--white);
+  transition: all 0.15s; letter-spacing: 0.05em;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+}
+.team-btn:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 rgba(0,0,0,0.3); }
+.team-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.3); }
+.team-btn.scored { color: #fff !important; transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.3); }
+.btn-a { color: var(--team-a); border-color: var(--team-a); }
+.btn-a.scored { background: var(--team-a); }
+.btn-b { color: var(--team-b); border-color: var(--team-b); }
+.btn-b.scored { background: var(--team-b); }
+.btn-c { color: var(--team-c); border-color: var(--team-c); }
+.btn-c.scored { background: var(--team-c); }
+.btn-d { color: var(--team-d); border-color: var(--team-d); }
+.btn-d.scored { background: var(--team-d); }
+.btn-e { color: var(--team-e); border-color: var(--team-e); }
+.btn-e.scored { background: var(--team-e); }
+.btn-f { color: var(--team-f); border-color: var(--team-f); }
+.btn-f.scored { background: var(--team-f); }
+.no-point-btn {
+  background: var(--white); border: 2px solid var(--dim);
+  color: var(--dim); padding: 8px 20px; font-size: 11px; cursor: pointer;
+  font-family: 'DotGothic16', monospace; font-weight: 700;
+  margin-top: 6px; letter-spacing: 0.1em;
+  transition: all 0.2s;
+}
+.no-point-btn:hover { background: var(--dim); color: var(--white); }
+
+/* ═══ S6: RESULT ═══ */
+.result-crown { font-size: 52px; animation: float 2s ease-in-out infinite; }
+.result-title {
+  font-family: 'Kaisei Decol', serif;
+  font-size: clamp(36px, 6vw, 70px);
+  color: var(--red2);
+  text-shadow: 3px 3px 0 var(--gold2);
+  margin: 12px 0 36px;
+}
+.result-podium {
+  display: flex; align-items: flex-end; gap: 12px; justify-content: center;
+  margin-bottom: 24px;
+}
+.podium-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.podium-rank-icon { font-size: 28px; }
+.podium-team-name { font-family: 'Kaisei Decol', serif; font-size: 22px; font-weight: 700; }
+.podium-score-num { font-size: 44px; font-weight: 900; line-height: 1; font-family: 'Kaisei Decol', serif; }
+.podium-members { font-size: 10px; color: var(--dim); max-width: 140px; line-height: 1.6; }
+.podium-block {
+  border: 3px solid var(--ink);
+  width: 140px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Kaisei Decol', serif; font-size: 20px; font-weight: 900; color: #fff;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.rank1 .podium-block { height: 100px; }
+.rank2 .podium-block { height: 72px; }
+.rank3 .podium-block { height: 50px; }
+
+
+/* ── AUDIO PLAYER ── */
+.audio-player {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  width: 100%; height: 100%; background: #0a0a0a;
+}
+.audio-wave {
+  display: flex; align-items: center; gap: 3px; height: 80px;
+}
+.wave-bar {
+  width: 6px; background: var(--red);
+  border-radius: 2px;
+  animation: wave-pulse 0.8s ease-in-out infinite alternate;
+  height: 20px;
+}
+@keyframes wave-pulse {
+  0%   { height: 8px;  opacity: 0.4; }
+  100% { height: 60px; opacity: 1; }
+}
+
+
+/* ── FIREBASE ANSWERS ── */
+.fb-panel {
+  position: fixed; bottom: 90px; left: 220px; right: 90px;
+  background: rgba(253,246,227,0.98);
+  border: 3px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  padding: 14px 20px;
+  z-index: 96; max-height: 200px; overflow-y: auto;
+  display: none;
+}
+.fb-panel.active { display: block; }
+.fb-panel-title {
+  font-size: 13px; letter-spacing: 0.2em; color: var(--ink);
+  margin-bottom: 10px; font-weight: 700;
+  border-bottom: 2px solid var(--ink); padding-bottom: 6px;
+}
+.fb-answers-grid {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.fb-answer-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px;
+  border: 3px solid;
+  background: #fff;
+  font-size: 18px; font-weight: 700;
+  font-family: 'DotGothic16', monospace;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.15);
+  animation: chipPop 0.3s cubic-bezier(0.175,0.885,0.32,1.275) both;
+}
+@keyframes chipPop { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+.fb-chip-team {
+  font-size: 12px; font-weight: 900;
+  padding: 2px 8px; border-radius: 2px;
+  color: #fff; flex-shrink: 0;
+}
+.fb-chip-ans  { font-size: 20px; color: var(--ink); font-weight: 700; }
+
+/* ── QR CODE PANEL ── */
+.qr-panel {
+  position: fixed; top: 50%; right: 100px; transform: translateY(-50%);
+  background: #fff; padding: 12px; border: 4px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+  z-index: 96; display: none; text-align: center;
+}
+.qr-panel.active { display: block; }
+.qr-panel img { width: 120px; height: 120px; display: block; }
+.qr-panel-label { font-size: 9px; color: #333; margin-top: 6px; letter-spacing: 0.1em; }
+
+
+
+/* ─── 設定タブ ─── */
+.settings-tabs {
+  display: flex; gap: 0; margin-bottom: 20px;
+  border: 3px solid var(--ink); align-self: flex-start;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.stab {
+  padding: 10px 20px; font-family: 'DotGothic16', monospace;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  background: var(--paper2); border: none; border-right: 2px solid var(--ink);
+  color: var(--dim); transition: all 0.15s; letter-spacing: 0.05em;
+}
+.stab:last-child { border-right: none; }
+.stab.active { background: var(--red2); color: #fff; }
+.stab:hover:not(.active) { background: var(--paper); color: var(--ink); }
+
+.stab-content { width: 100%; }
+
+/* ─── 氏名変更グリッド ─── */
+.settings-names-grid {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; width: 100%;
+}
+.name-row {
+  display: flex; flex-direction: column; gap: 4px;
+  background: var(--white); border: 2px solid var(--ink);
+  padding: 10px 12px; box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+}
+.name-row-label { font-size: 10px; color: var(--dim); letter-spacing: 0.1em; }
+.name-row-input {
+  background: transparent; border: none; border-bottom: 2px solid var(--dim);
+  font-family: 'DotGothic16', monospace; font-size: 16px; color: var(--ink);
+  outline: none; padding: 2px 4px; width: 100%;
+}
+.name-row-input:focus { border-color: var(--red2); }
+
+/* ─── チーム編成 ─── */
+.settings-teams-wrap {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; width: 100%;
+}
+.team-edit-card {
+  background: var(--white); border: 3px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink); padding: 12px;
+  position: relative; overflow: hidden;
+}
+.team-edit-card::before {
+  content: ''; position: absolute; top:0; left:0; right:0; height: 5px;
+}
+.tec-a::before { background: var(--team-a); }
+.tec-b::before { background: var(--team-b); }
+.tec-c::before { background: var(--team-c); }
+.tec-d::before { background: var(--team-d); }
+.tec-e::before { background: var(--team-e); }
+.tec-f::before { background: var(--team-f); }
+.team-edit-name {
+  font-family: 'Kaisei Decol', serif;
+  font-size: 18px; font-weight: 700; margin-bottom: 10px;
+}
+.tec-a .team-edit-name { color: var(--team-a); }
+.tec-b .team-edit-name { color: var(--team-b); }
+.tec-c .team-edit-name { color: var(--team-c); }
+.tec-d .team-edit-name { color: var(--team-d); }
+.tec-e .team-edit-name { color: var(--team-e); }
+.tec-f .team-edit-name { color: var(--team-f); }
+.team-member-list { display: flex; flex-direction: column; gap: 4px; min-height: 80px; }
+.team-member-item {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--paper2); border: 1px solid var(--dim);
+  padding: 5px 10px; font-size: 13px; font-weight: 700;
+  cursor: grab;
+}
+.team-member-item:active { cursor: grabbing; opacity: 0.5; }
+.team-member-item.drag-over { border: 2px dashed var(--red2); background: #fff0f0; }
+.team-member-move {
+  background: none; border: none; cursor: pointer;
+  font-size: 12px; color: var(--dim); padding: 0 4px;
+}
+.team-member-move:hover { color: var(--red2); }
+
+/* ─── ドラッグ順番変更（問題） ─── */
+.settings-q-row.dragging { opacity: 0.4; }
+.settings-q-row.drag-over-q { border-top: 3px solid var(--red2); }
+.drag-handle {
+  cursor: grab; color: var(--dim); font-size: 16px;
+  padding: 0 4px; flex-shrink: 0;
+}
+.drag-handle:active { cursor: grabbing; }
+
+/* ═══ 設定画面 ═══ */
+#s-settings {
+  justify-content: flex-start;
+  padding: 32px 90px 80px 220px;
+  overflow-y: auto;
+}
+.settings-title {
+  font-family: 'Kaisei Decol', serif;
+  font-size: 32px; color: var(--red2);
+  text-shadow: 2px 2px 0 var(--gold2);
+  margin-bottom: 28px;
+  text-decoration: underline double var(--red2);
+  text-underline-offset: 6px;
+  align-self: flex-start;
+}
+.settings-section { width: 100%; margin-bottom: 28px; }
+.settings-section-title {
+  font-size: 11px; letter-spacing: 0.25em; color: var(--dim);
+  font-weight: 700; margin-bottom: 12px;
+  border-bottom: 2px solid var(--dim); padding-bottom: 6px;
+}
+.settings-q-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--white); border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+  padding: 10px 14px; margin-bottom: 8px;
+}
+.settings-q-num {
+  font-family: 'Kaisei Decol', serif;
+  font-size: 16px; color: var(--red2); font-weight: 700;
+  min-width: 48px; flex-shrink: 0;
+}
+.settings-q-target {
+  font-size: 13px; color: var(--dim); font-weight: 700;
+  min-width: 80px; flex-shrink: 0;
+}
+.settings-input {
+  flex: 1; background: transparent; border: none;
+  border-bottom: 2px solid var(--dim);
+  padding: 4px 6px; font-family: 'DotGothic16', monospace;
+  font-size: 14px; color: var(--ink); outline: none;
+  transition: border-color 0.2s;
+}
+.settings-input:focus { border-color: var(--red2); }
+.settings-answer-input {
+  width: 180px; flex-shrink: 0;
+  background: #fff8e0; border: none;
+  border-bottom: 2px solid var(--gold);
+  padding: 4px 6px; font-family: 'DotGothic16', monospace;
+  font-size: 14px; color: var(--ink); outline: none;
+  transition: border-color 0.2s;
+}
+.settings-answer-input:focus { border-color: var(--gold2); }
+.settings-save-btn {
+  background: var(--red2); border: 3px solid var(--ink);
+  color: #fff; padding: 14px 40px;
+  font-family: 'Kaisei Decol', serif;
+  font-size: 18px; font-weight: 700;
+  cursor: pointer; letter-spacing: 0.1em;
+  box-shadow: 4px 4px 0 var(--ink);
+  transition: all 0.15s; align-self: flex-start;
+}
+.settings-save-btn:active { transform: translate(3px,3px); box-shadow: 1px 1px 0 var(--ink); }
+.settings-col-labels {
+  display: flex; gap: 10px; padding: 0 14px;
+  margin-bottom: 4px;
+}
+.settings-col-label {
+  font-size: 10px; letter-spacing: 0.15em; color: var(--dim); font-weight: 700;
+}
+
+/* ═══ CONFETTI ═══ */
+.confetti-wrap { position: fixed; inset: 0; pointer-events: none; z-index: 50; overflow: hidden; }
+.cp { position: absolute; top: -12px; animation: cf-fall linear forwards; }
+@keyframes cf-fall { to { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+
+/* ═══ NOTIFICATION ═══ */
+.notif {
+  position: fixed; top: 40px; left: 50%; transform: translateX(-50%);
+  padding: 10px 28px; font-size: 16px; font-weight: 900;
+  z-index: 102; opacity: 0; pointer-events: none;
+  transition: opacity 0.25s; white-space: nowrap;
+  font-family: 'Kaisei Decol', serif;
+  border: 3px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.notif.show { opacity: 1; }
+</style>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set, push, remove, get }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCVYoPcmJYISStsKBUZ4rnSOYaylrhYEos",
+      authDomain: "farewell-party2025.firebaseapp.com",
+      databaseURL: "https://farewell-party2025-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "farewell-party2025",
+      storageBucket: "farewell-party2025.firebasestorage.app",
+      messagingSenderId: "687831204742",
+      appId: "1:687831204742:web:b1674584e2bc639193e207"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getDatabase(app);
+
+    // ── MC側: 現在の問題番号をFirebaseに書き込む ──
+    window.fbSetCurrentQ = (qIndex) => {
+      set(ref(db, 'currentQ'), qIndex);
+      // 問題が変わったら回答をリセット
+      remove(ref(db, 'answers'));
+    };
+
+    // ── MC側: 回答をリアルタイム受信してUIに反映 ──
+    onValue(ref(db, 'answers'), (snapshot) => {
+      const data = snapshot.val() || {};
+      window._fbAnswers = data;
+      if (typeof renderFbAnswers === 'function') renderFbAnswers(data);
+    });
+
+    // ── QRコード生成用URL ──
+    const ANSWER_URL = location.href.replace('oo-ou-quiz-v2.html','oo-ou-answer.html');
+    window._answerURL = ANSWER_URL;
+
+    // 回答締め切り（S5に入ったとき）
+    window.fbCloseAnswers = () => {
+      set(ref(db, 'status'), 'closed');
+    };
+
+    // S2に移ったとき: 問題更新＋回答オープン
+    const origSetQ = window.fbSetCurrentQ;
+    window.fbSetCurrentQ = (qIndex) => {
+      set(ref(db, 'currentQ'), qIndex);
+      set(ref(db, 'status'), 'open');
+      remove(ref(db, 'answers'));
+    };
+
+    console.log('[Firebase] 接続完了');
+  </script>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progress-bar" style="width:0%"></div></div>
+<div class="scores-bar" id="scores-bar"></div>
+<div class="confetti-wrap" id="confetti"></div>
+<div class="notif" id="notif"></div>
+
+<!-- FIREBASE ANSWER PANEL -->
+<div class="fb-panel" id="fb-panel">
+  <div class="fb-panel-title">▶ チームの回答（リアルタイム）</div>
+  <div class="fb-answers-grid" id="fb-answers-grid"></div>
+</div>
+
+<!-- QR CODE PANEL -->
+<div class="qr-panel" id="qr-panel">
+  <img id="qr-img" src="" alt="QR">
+  <div class="qr-panel-label">スマホで読み取って回答</div>
+  <div id="qr-label" style="font-size:7px;color:#666;margin-top:4px;word-break:break-all;max-width:120px"></div>
+</div>
+
+
+<!-- HISTORY PANEL -->
+<div class="score-history" id="score-history">
+  <div class="score-history-title">▶ ポイント履歴</div>
+  <div class="history-list" id="history-list"></div>
+</div>
+<button class="history-toggle" id="history-toggle" onclick="toggleHistory()">履歴</button>
+
+<!-- NAV -->
+<button class="nav-btn back-btn" id="back-btn" onclick="goBack()">◀ 戻る</button>
+<button class="nav-btn reset-btn" id="reset-btn" onclick="confirmReset()">■ リセット</button>
+<div class="click-hint" id="click-hint">クリックで次へ ▶</div>
+
+<!-- S0 -->
+<div class="screen" id="s-teams">
+  <div class="teams-title">【 チーム発表 】</div>
+  <div class="teams-grid" id="teams-grid"></div>
+  <button class="nav-btn" style="position:static;margin-top:24px;font-size:13px" onclick="goPhase('settings')">⚙ 問題・回答を編集する</button>
+</div>
+
+<!-- S-SETTINGS -->
+<div class="screen" id="s-settings">
+  <div class="settings-title">⚙ 設定</div>
+
+  <!-- タブ -->
+  <div class="settings-tabs">
+    <button class="stab active" id="stab-q"     onclick="switchTab('q')">📝 問題・回答</button>
+    <button class="stab"        id="stab-names"  onclick="switchTab('names')">👤 氏名変更</button>
+    <button class="stab"        id="stab-teams"  onclick="switchTab('teams')">👥 チーム編成</button>
+  </div>
+
+  <!-- TAB: 問題・回答 -->
+  <div class="stab-content" id="stab-content-q">
+    <div class="settings-col-labels">
+      <div class="settings-col-label" style="min-width:36px">#</div>
+      <div class="settings-col-label" style="min-width:72px">対象者</div>
+      <div class="settings-col-label" style="flex:1">質問文</div>
+      <div class="settings-col-label" style="width:160px">正解（任意）</div>
+      <div class="settings-col-label" style="width:60px">順番</div>
+    </div>
+    <div id="settings-q-list"></div>
+  </div>
+
+  <!-- TAB: 氏名変更 -->
+  <div class="stab-content" id="stab-content-names" style="display:none">
+    <div class="settings-names-grid" id="settings-names-grid"></div>
+  </div>
+
+  <!-- TAB: チーム編成 -->
+  <div class="stab-content" id="stab-content-teams" style="display:none">
+    <div class="settings-teams-wrap" id="settings-teams-wrap"></div>
+  </div>
+
+  <button class="settings-save-btn" onclick="saveSettings()">💾 保存してトップへ戻る</button>
+</div>
+
+<!-- S1 -->
+<div class="screen" id="s-title">
+  <div class="title-crown">👑</div>
+  <div class="title-big">○○王</div>
+  <div class="title-sub">━━ 2025 送別会スペシャル ━━</div>
+</div>
+
+<!-- S2 -->
+<div class="screen" id="s-target">
+  <div class="q-num-badge" id="q-num-badge">第 1 問 ／ 16</div>
+  <div class="target-label">◆ この人のことをどれだけ知っている？ ◆</div>
+  <div class="target-name" id="target-name">神藤さん</div>
+  <div class="target-team-badge" id="target-team-badge">Aチーム</div>
+</div>
+
+<!-- S3 -->
+<div class="screen" id="s-question">
+  <div class="q-label" id="q-label-text">Q1 ━━ 神藤さん王　決定戦</div>
+  <div class="question-text" id="question-text">休日の過ごし方で一番多いのは？</div>
+</div>
+
+<!-- S4 -->
+<div class="screen" id="s-video">
+  <div class="video-person-name" id="video-person-name">▶ 神藤さんの回答動画</div>
+  <div class="video-wrapper" id="video-wrapper" onclick="handleVideoClick(event)">
+    <div class="video-drop-zone">
+      <div class="video-drop-icon">📼</div><div style="font-size:11px;color:#666;margin-top:-4px">動画 / 音声 / 画像</div>
+      <div class="video-drop-text">クリックしてファイルをアップロード</div>
+      <div class="video-drop-sub" id="video-hint-text">Q1 の動画ファイルを選択</div>
+    </div>
+    <video id="quiz-video" controls></video>
+  </div>
+  <input type="file" id="video-input" accept="video/*,audio/*,image/*" onchange="loadMedia(this)">
+  <button class="no-point-btn" style="margin-top:16px" onclick="advance()">▶ 動画をスキップして次へ</button>
+</div>
+
+<!-- S5 -->
+<div class="screen" id="s-answer">
+  <div class="answer-reveal-label">━━━ 正 解 は ━━━</div>
+  <div class="answer-text" id="answer-text">？？？</div>
+  <div class="point-section">
+    <div class="point-label">▼ 正解チームを選んでポイント付与（複数選択可）▼</div>
+    <div class="team-buttons" id="team-buttons"></div>
+    <button class="no-point-btn" onclick="skipPoint()">正解なし・次の問題へ ▶</button>
+  </div>
+</div>
+
+<!-- S6 -->
+<div class="screen" id="s-result">
+  <div class="result-crown">🏆</div>
+  <div class="result-title">━━ 最 終 結 果 ━━</div>
+  <div class="result-podium" id="result-podium"></div>
+  <button class="nav-btn" onclick="fullReset()" style="position:static;margin-top:20px">■ はじめからやり直す</button>
+</div>
+
+<script>
+
+// ═══════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════
+const TEAMS = [
+  { id: 'a', name: 'Aチーム', color: 'var(--team-a)', cls: 'ta',
+    members: ['神藤', '湯前', '後藤', '笹木', '佐谷', '安盛先生'] },
+  { id: 'b', name: 'Bチーム', color: 'var(--team-b)', cls: 'tb',
+    members: ['矢作', '飯塚', '立石', '中村', '豊田', '中野渡先生'] },
+  { id: 'c', name: 'Cチーム', color: 'var(--team-c)', cls: 'tc',
+    members: ['菅野', '谷藤', '岩渕', '中田', '新沼'] },
+  { id: 'd', name: 'Dチーム', color: 'var(--team-d)', cls: 'td',
+    members: ['藤岡', '藤江', 'Steven', '杉浦', '神田'] },
+  { id: 'e', name: 'Eチーム', color: 'var(--team-e)', cls: 'te',
+    members: ['高橋', '廣仲', '荒谷', '関口', '勝又先生'] },
+  { id: 'f', name: 'Fチーム', color: 'var(--team-f)', cls: 'tf',
+    members: ['鎌田', '大友', '板倉', '渡邊', '前田先生'] },
+];
+
+// 対象者が所属するチームを取得
+const TARGET_TEAMS = {
+  '神藤': 'a', '荒谷': 'a', '笹木': 'a', '安盛先生': 'a',
+  '矢作': 'b', '飯塚': 'b', '中村': 'b', '前田先生': 'b',
+  '菅野': 'c', '谷藤': 'c',
+  '藤岡': 'd', '藤江': 'd',
+  '高橋': 'e', '廣仲': 'e',
+  '鎌田': 'f', '大友': 'f',
+};
+
+const QUESTIONS = [
+  { target: '神藤', question: '休日の過ごし方で一番多いのは？', answer: '？' },
+  { target: '荒谷', question: '今ハマっていること・最近ハマったものは？', answer: '？' },
+  { target: '矢作', question: '自分を動物に例えると何？', answer: '？' },
+  { target: '飯塚', question: '行ったことがある・また行きたい旅行先は？', answer: '？' },
+  { target: '谷藤', question: 'ストレス発散法は？', answer: '？' },
+  { target: '藤岡', question: '最近見たドラマ・映画・アニメは？', answer: '？' },
+  { target: '藤江', question: 'カラオケで十八番の曲は？', answer: '？' },
+  { target: '高橋', question: '好きな食べ物 or よく行くご飯の系統は？', answer: '？' },
+  { target: '廣仲', question: '仕事以外で力を入れていることは？', answer: '？' },
+  { target: '鎌田', question: '人生で一番楽しかった思い出は？', answer: '？' },
+  { target: '大友', question: '朝型？夜型？どっち？', answer: '？' },
+  { target: '菅野', question: '5年後、自分は何をしていると思う？', answer: '？' },
+  { target: '笹木', question: '自分の一番の強みは何だと思う？', answer: '？' },
+  { target: '中村', question: '研究室での一番の思い出は？', answer: '？' },
+  { target: '安盛先生', question: '研究室の学生たちへ一言メッセージは？', answer: '？' },
+  { target: '前田先生', question: 'これからの人生で一番楽しみにしていることは？', answer: '？' },
+];
+
+// ═══════════════════════════════════════════════
+// STATE + localStorage永続化
+// ═══════════════════════════════════════════════
+const STORAGE_KEY = 'oo_ou_quiz_state_v2';
+
+function defaultState() {
+  return {
+    phase: 'teams',
+    qIndex: 0,
+    scores: { a:0, b:0, c:0, d:0, e:0, f:0 },
+    scoredQ: {},
+    videoURLs: {},   // ※リロード後は消える（ブラウザメモリのみ）
+    answers: {},
+  };
+}
+
+function saveState() {
+  try {
+    // videoURLsはobjectURLなのでリロード後使えない → 保存しない
+    const { videoURLs, ...savable } = state;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(savable));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return { ...defaultState(), ...parsed, videoURLs: {} };
+    }
+  } catch(e) {}
+  return defaultState();
+}
+
+let state = loadState();
+
+// ═══════════════════════════════════════════════
+// PHASES
+// ═══════════════════════════════════════════════
+const PHASE_ORDER = ['teams','settings','title','target','question','video','answer'];
+
+function advance() {
+  const q = QUESTIONS[state.qIndex];
+  if (state.phase === 'teams') { goPhase('title'); return; }
+  if (state.phase === 'title') { state.qIndex = 0; goPhase('target'); return; }
+  if (state.phase === 'target') { goPhase('question'); return; }
+  if (state.phase === 'question') { goPhase('video'); return; }
+  if (state.phase === 'video') { goPhase('answer'); return; }
+  if (state.phase === 'answer') {
+    if (state.qIndex < QUESTIONS.length - 1) {
+      state.qIndex++;
+      goPhase('target');
+    } else {
+      goPhase('result');
+    }
+    return;
+  }
+}
+
+function goPhase(phase) {
+  state.phase = phase;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const totalPhases = QUESTIONS.length * 4 + 2;
+  const done = state.qIndex * 4 + PHASE_ORDER.indexOf(phase);
+  document.getElementById('progress-bar').style.width = Math.min(100, done / totalPhases * 100) + '%';
+
+  // back button visibility
+  const canGoBack = !(phase === 'teams');
+  document.getElementById('back-btn').style.opacity = canGoBack ? '1' : '0';
+  document.getElementById('back-btn').style.pointerEvents = canGoBack ? 'all' : 'none';
+
+  if (phase === 'teams') { renderTeams(); show('s-teams'); hideClickHint(); playSound('click'); fbDeactivate(); }
+  if (phase === 'settings') { renderSettings(); show('s-settings'); hideClickHint(); }
+  if (phase === 'title') { show('s-title'); showClickHint(); playSound('click'); fbDeactivate(); }
+  if (phase === 'target') { renderTarget(); show('s-target'); showClickHint(); playSound('whoosh'); fbActivate(state.qIndex, true); document.getElementById('fb-panel').classList.add('active'); }
+  if (phase === 'question') { renderQuestion(); show('s-question'); showClickHint(); playSound('click'); fbActivate(state.qIndex, false); document.getElementById('fb-panel').classList.add('active'); }
+  if (phase === 'video') { renderVideo(); show('s-video'); hideClickHint(); playSound('click'); fbActivate(state.qIndex, false); document.getElementById('fb-panel').classList.add('active'); if(typeof window.fbCloseAnswers==='function') window.fbCloseAnswers(); }
+  if (phase === 'answer') { renderAnswer(); show('s-answer'); hideClickHint(); playSound('reveal'); document.getElementById('fb-panel').classList.add('active'); document.getElementById('qr-panel').classList.remove('active'); }
+  if (phase === 'result') { renderResult(); show('s-result'); hideClickHint(); confetti(80); playSound('fanfare'); }
+
+  renderScores();
+  renderHistory();
+  saveState();
+}
+
+function show(id) { document.getElementById(id).classList.add('active'); }
+function showClickHint() { document.getElementById('click-hint').style.opacity = '1'; }
+function hideClickHint() { document.getElementById('click-hint').style.opacity = '0'; }
+
+// click anywhere to advance (except on interactive elements)
+document.addEventListener('click', (e) => {
+  const skip = e.target.closest('button, video, input, .video-wrapper, .team-btn, .no-point-btn, .reset-btn, select');
+  if (skip) return;
+  if (['teams','title','target','question'].includes(state.phase)) advance();
+});
+
+// ═══════════════════════════════════════════════
+// RENDER FUNCTIONS
+// ═══════════════════════════════════════════════
+function renderTeams() {
+  const grid = document.getElementById('teams-grid');
+  const targetNames = QUESTIONS.map(q => q.target);
+  grid.innerHTML = TEAMS.map(t => `
+    <div class="team-card ${t.cls}">
+      <div class="team-label">TEAM</div>
+      <div class="team-name-big">${t.name}</div>
+      <div class="team-members">
+        ${t.members.map(m => `<span class="member-pill ${targetNames.includes(m) ? 'target' : ''}">${m}</span>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderTarget() {
+  const q = QUESTIONS[state.qIndex];
+  const teamId = TARGET_TEAMS[q.target] || 'a';
+  const team = TEAMS.find(t => t.id === teamId);
+  document.getElementById('q-num-badge').textContent = `第 ${state.qIndex + 1} 問 / ${QUESTIONS.length}`;
+  const nameEl = document.getElementById('target-name');
+  nameEl.textContent = q.target.endsWith('先生') ? q.target : q.target + 'さん';
+  nameEl.style.animation = 'none';
+  void nameEl.offsetWidth;
+  nameEl.style.animation = '';
+
+  const badge = document.getElementById('target-team-badge');
+  badge.textContent = team ? team.name : '';
+  badge.style.borderColor = team ? team.color : 'transparent';
+  badge.style.color = team ? team.color : 'transparent';
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[state.qIndex];
+  const suffix = q.target.endsWith('先生') ? '' : 'さん';
+  document.getElementById('q-label-text').textContent = `Q${state.qIndex+1} — ${q.target}${suffix}王　決定戦`;
+  const el = document.getElementById('question-text');
+  el.textContent = q.question;
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = 'fadeUp 0.5s ease both';
+}
+
+function renderVideo() {
+  const q = QUESTIONS[state.qIndex];
+  const suf = q.target.endsWith('先生') ? '' : 'さん';
+  document.getElementById('video-person-name').textContent = `🎬 ${q.target}${suf}の回答動画`;
+  document.getElementById('video-hint-text').textContent = `Q${state.qIndex+1} の動画ファイルを選択`;
+  const wrapper = document.getElementById('video-wrapper');
+  const vid = document.getElementById('quiz-video');
+  restoreMedia(state.qIndex);
+}
+
+function renderAnswer() {
+  const q = QUESTIONS[state.qIndex];
+  const ans = state.answers[state.qIndex] || q.answer;
+
+  // make answer editable inline
+  const el = document.getElementById('answer-text');
+  el.contentEditable = 'true';
+  el.textContent = ans;
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = 'answerDrop 0.7s cubic-bezier(0.175,0.885,0.32,1.275) both';
+  el.oninput = () => { state.answers[state.qIndex] = el.textContent; };
+
+  // team buttons (複数選択可)
+  const scored = state.scoredQ[state.qIndex] || [];
+  document.getElementById('team-buttons').innerHTML = TEAMS.map(t => `
+    <button class="team-btn btn-${t.id} ${scored.includes(t.id) ? 'scored' : ''}"
+            onclick="givePoint('${t.id}')">${t.name}${scored.includes(t.id) ? ' ✓' : ''}</button>
+  `).join('');
+
+  confetti(20);
+}
+
+function renderScores() {
+  const max = Math.max(1, ...Object.values(state.scores));
+  document.getElementById('scores-bar').innerHTML = TEAMS.map(t => `
+    <div class="score-chip chip-${t.id}">
+      <div class="score-chip-name">${t.name.replace('チーム','')}</div>
+      <div class="score-chip-num">${state.scores[t.id]}</div>
+      <div class="score-chip-bar">
+        <div class="score-chip-fill" style="width:${state.scores[t.id]/max*100}%"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderResult() {
+  const sorted = TEAMS.map(t => ({ ...t, score: state.scores[t.id] }))
+    .sort((a,b) => b.score - a.score);
+
+  const icons = ['🥇','🥈','🥉'];
+  const heights = [100, 70, 50];
+  // podium order: 2nd, 1st, 3rd
+  const order = [sorted[1], sorted[0], sorted[2]].filter(Boolean);
+  const oIcons = sorted[1] ? ['🥈','🥇','🥉'] : ['🥇','🥉'];
+  const oRanks = sorted[1] ? ['rank2','rank1','rank3'] : ['rank1','rank3'];
+  const oH = sorted[1] ? [70,100,50] : [100,50];
+
+  document.getElementById('result-podium').innerHTML = order.map((t, i) => `
+    <div class="podium-item ${oRanks[i]}">
+      <div class="podium-rank-icon">${oIcons[i]}</div>
+      <div class="podium-team-name" style="color:${t.color}">${t.name}</div>
+      <div class="podium-score-num" style="color:${t.color}">${t.score}</div>
+      <div class="podium-members">${t.members.join(' / ')}</div>
+      <div class="podium-block" style="background:${t.color};height:${oH[i]}px">${oIcons[i]}</div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════
+// INTERACTIONS
+// ═══════════════════════════════════════════════
+function givePoint(teamId) {
+  const qi = state.qIndex;
+  if (!state.scoredQ[qi]) state.scoredQ[qi] = [];
+  const arr = state.scoredQ[qi];
+  const idx = arr.indexOf(teamId);
+  if (idx !== -1) {
+    // already scored → toggle off
+    arr.splice(idx, 1);
+    state.scores[teamId] = Math.max(0, state.scores[teamId] - 1);
+    if (arr.length === 0) delete state.scoredQ[qi];
+    playSound('cancel');
+    showNotif('↩ ポイントを取り消し', '#888');
+  } else {
+    arr.push(teamId);
+    state.scores[teamId] = (state.scores[teamId] || 0) + 1;
+    const team = TEAMS.find(t => t.id === teamId);
+    showNotif(`🎉 ${team.name} +1ポイント！`, team.color);
+    confetti(30);
+    playSound('point');
+  }
+  renderAnswer();
+  renderScores();
+  renderHistory();
+  saveState();
+}
+
+function skipPoint() { advance(); }
+
+function handleVideoClick(e) {
+  if (e.target.tagName === 'VIDEO') return;
+  document.getElementById('video-input').click();
+}
+
+function loadMedia(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const type = file.type.split('/')[0]; // 'video' | 'audio' | 'image'
+  state.videoURLs[state.qIndex] = { url, type };
+  renderMediaPlayer(url, type);
+  input.value = '';
+}
+
+function renderMediaPlayer(url, type) {
+  const wrapper = document.getElementById('video-wrapper');
+  // clear previous dynamic elements
+  wrapper.querySelectorAll('.dyn-media').forEach(e => e.remove());
+  const vid = document.getElementById('quiz-video');
+  vid.style.display = 'none'; vid.pause(); vid.src = '';
+
+  if (type === 'video') {
+    vid.src = url; vid.style.display = 'block';
+    wrapper.classList.add('loaded');
+    vid.play();
+
+  } else if (type === 'audio') {
+    wrapper.classList.add('loaded');
+    // waveform visual + audio player
+    const wrap = document.createElement('div');
+    wrap.className = 'dyn-media audio-player';
+    wrap.innerHTML = `
+      <div class="audio-wave" id="audio-wave">
+        ${Array.from({length:40},(_,i)=>`<div class="wave-bar" style="animation-delay:${i*0.05}s"></div>`).join('')}
+      </div>
+      <audio id="dyn-audio" controls src="${url}" style="margin-top:16px;width:80%;accent-color:var(--red2)"></audio>
+      <div style="font-size:12px;color:#aaa;margin-top:8px;">🎵 音声ファイル</div>
+    `;
+    wrapper.appendChild(wrap);
+    wrapper.querySelector('#dyn-audio').play();
+
+  } else if (type === 'image') {
+    wrapper.classList.add('loaded');
+    const img = document.createElement('img');
+    img.className = 'dyn-media';
+    img.src = url;
+    img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
+    wrapper.appendChild(img);
+  }
+}
+
+// called from renderVideo to restore media if already loaded
+function restoreMedia(qi) {
+  const wrapper = document.getElementById('video-wrapper');
+  const vid = document.getElementById('quiz-video');
+  wrapper.querySelectorAll('.dyn-media').forEach(e => e.remove());
+  vid.style.display = 'none'; vid.src = ''; vid.load();
+  wrapper.classList.remove('loaded');
+
+  const saved = state.videoURLs[qi];
+  if (saved) renderMediaPlayer(saved.url, saved.type);
+}
+
+// legacy compat
+function loadVideo(input) { loadMedia(input); }
+
+// ═══════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════
+function showNotif(msg, color = 'var(--gold)') {
+  const el = document.getElementById('notif');
+  el.textContent = msg;
+  el.style.background = color;
+  el.style.color = '#000';
+  el.style.boxShadow = `0 8px 32px ${color}66`;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function confetti(count = 30) {
+  const wrap = document.getElementById('confetti');
+  const colors = ['#f5c842','#e84a5f','#2ec4b6','#9b5de5','#ff9f43','#54a0ff','#fff'];
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'cp';
+    const size = 6 + Math.random() * 10;
+    el.style.cssText = `
+      left:${Math.random()*100}%;
+      width:${size}px; height:${size}px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      border-radius:${Math.random()>0.5?'50%':'3px'};
+      animation-delay:${Math.random()*1.2}s;
+      animation-duration:${2.5+Math.random()*2}s;
+    `;
+    wrap.appendChild(el);
+  }
+  setTimeout(() => wrap.innerHTML = '', 5000);
+}
+
+function confirmReset() {
+  if (confirm('スコアと進行状況をリセットしますか？')) fullReset();
+}
+
+function fullReset() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  state = defaultState();
+  goPhase('teams');
+}
+
+// ═══════════════════════════════════════════════
+// BACK BUTTON
+// ═══════════════════════════════════════════════
+function goBack() {
+  const p = state.phase;
+  if (p === 'settings') { goPhase('teams'); return; }
+  if (p === 'question') { goPhase('target'); return; }
+  if (p === 'video')    { goPhase('question'); return; }
+  if (p === 'answer')   { goPhase('video'); return; }
+  if (p === 'target') {
+    if (state.qIndex > 0) { state.qIndex--; goPhase('answer'); }
+    else goPhase('title');
+    return;
+  }
+  if (p === 'result') { state.qIndex = QUESTIONS.length - 1; goPhase('answer'); return; }
+}
+
+// ═══════════════════════════════════════════════
+// HISTORY PANEL
+// ═══════════════════════════════════════════════
+function toggleHistory() {
+  const panel = document.getElementById('score-history');
+  const btn   = document.getElementById('history-toggle');
+  panel.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  const items = [];
+  Object.entries(state.scoredQ)
+    .sort((a,b) => Number(a[0]) - Number(b[0]))
+    .forEach(([qi, teamIds]) => {
+      const q = QUESTIONS[qi];
+      const teams = (Array.isArray(teamIds) ? teamIds : [teamIds])
+        .map(id => TEAMS.find(t => t.id === id)).filter(Boolean);
+      items.push(`<div class="history-item" style="flex-wrap:wrap;gap:4px">
+        <span class="hi-q">Q${Number(qi)+1}</span>
+        <span class="hi-name">${q.target}</span>
+        <span style="display:flex;gap:4px;flex-wrap:wrap">
+          ${teams.map(team =>
+            `<span class="hi-team" style="background:${team.color};color:#000">${team.name.replace('チーム','')}</span>`
+          ).join('')}
+        </span>
+        <button class="hi-undo" onclick="undoAllPoints(${qi})" title="この問のポイントを全取り消し">✕</button>
+      </div>`);
+    });
+  list.innerHTML = items.length
+    ? items.join('')
+    : '<div style="color:var(--dim);font-size:12px;padding:8px 4px">まだポイントなし</div>';
+}
+
+function undoAllPoints(qi) {
+  const teamIds = state.scoredQ[qi];
+  if (!teamIds || teamIds.length === 0) return;
+  (Array.isArray(teamIds) ? teamIds : [teamIds]).forEach(id => {
+    state.scores[id] = Math.max(0, (state.scores[id] || 0) - 1);
+  });
+  delete state.scoredQ[qi];
+  showNotif(`↩ Q${Number(qi)+1} のポイントを取り消し`, '#888');
+  playSound('cancel');
+  renderScores();
+  renderHistory();
+  saveState();
+  if (state.phase === 'answer') renderAnswer();
+}
+
+// ═══════════════════════════════════════════════
+// 昭和サウンドエフェクト (Web Audio API)
+// ═══════════════════════════════════════════════
+const AC = new (window.AudioContext || window.webkitAudioContext)();
+
+function beep(freq, type, dur, vol, start, dest) {
+  const o = AC.createOscillator();
+  const g = AC.createGain();
+  o.connect(g); g.connect(dest || AC.destination);
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, AC.currentTime + start);
+  g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + start + dur);
+  o.start(AC.currentTime + start);
+  o.stop(AC.currentTime + start + dur + 0.01);
+}
+
+function noise(dur, vol, start) {
+  const buf = AC.createBuffer(1, AC.sampleRate * dur, AC.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const src = AC.createBufferSource();
+  const g = AC.createGain();
+  src.buffer = buf; src.connect(g); g.connect(AC.destination);
+  g.gain.setValueAtTime(vol, AC.currentTime + start);
+  g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + start + dur);
+  src.start(AC.currentTime + start);
+}
+
+// ランダムでバリエーションを選ぶ
+const SOUND_VARIANTS = {
+  click: [
+    () => { // カチッ（タイプライター）
+      beep(1200,'square',0.04,0.2,0);
+      beep(800,'square',0.03,0.1,0.02);
+    },
+    () => { // コツン（木琴）
+      beep(900,'triangle',0.08,0.25,0);
+      beep(1800,'triangle',0.04,0.1,0.01);
+    },
+    () => { // ピッ（古いボタン）
+      beep(2000,'sine',0.06,0.18,0);
+    },
+  ],
+  whoosh: [
+    () => { // ジャジャーン（登場SE）
+      beep(220,'sawtooth',0.05,0.3,0);
+      beep(330,'sawtooth',0.05,0.3,0.05);
+      beep(440,'sawtooth',0.08,0.35,0.1);
+      beep(550,'sawtooth',0.12,0.4,0.16);
+      beep(660,'square',0.15,0.5,0.22);
+    },
+    () => { // ドコドコ（太鼓登場）
+      [0,0.1,0.18,0.24].forEach(t => {
+        beep(80,'sawtooth',0.08,0.3,t);
+        noise(0.06,0.15,t);
+      });
+      beep(440,'square',0.3,0.4,0.3);
+    },
+    () => { // ビヨーン（バネ音）
+      const o = AC.createOscillator();
+      const g = AC.createGain();
+      o.connect(g); g.connect(AC.destination);
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(150, AC.currentTime);
+      o.frequency.exponentialRampToValueAtTime(800, AC.currentTime + 0.3);
+      o.frequency.exponentialRampToValueAtTime(400, AC.currentTime + 0.6);
+      g.gain.setValueAtTime(0.3, AC.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + 0.7);
+      o.start(); o.stop(AC.currentTime + 0.7);
+    },
+  ],
+  reveal: [
+    () => { // チャラララーン（正解発表）
+      [262,330,392,523,659,784].forEach((f,i) => beep(f,'square',0.25,0.2,i*0.1));
+    },
+    () => { // ドドドド…ジャン！（ドラム→シンバル）
+      [0,0.08,0.16,0.22].forEach(t => { beep(90,'sawtooth',0.07,0.25,t); noise(0.05,0.1,t); });
+      beep(440,'sawtooth',0.04,0.3,0.28);
+      beep(880,'sawtooth',0.04,0.3,0.28);
+      noise(0.15,0.35,0.28);
+    },
+    () => { // ファンファーレ（トランペット風）
+      [[523,0],[523,0.15],[523,0.3],[415,0.45],[523,0.6]].forEach(([f,t]) =>
+        beep(f,'sawtooth',0.14,0.25,t));
+    },
+  ],
+  point: [
+    () => { // ピンポン！（正解音）
+      beep(800,'sine',0.1,0.3,0);
+      beep(1000,'sine',0.12,0.35,0.12);
+      beep(1200,'sine',0.15,0.4,0.26);
+    },
+    () => { // チャリーン（コイン）
+      [1400,1800,2200,1600].forEach((f,i) => beep(f,'triangle',0.1,0.25,i*0.06));
+    },
+    () => { // ドンドンドン（太鼓3連）
+      [0,0.12,0.24].forEach(t => { beep(120,'sawtooth',0.1,0.4,t); noise(0.08,0.2,t); });
+      beep(440,'square',0.3,0.35,0.36);
+    },
+    () => { // ピッポッパッ（電子音3連）
+      [[600,0],[800,0.1],[1000,0.2]].forEach(([f,t]) => beep(f,'square',0.08,0.3,t));
+    },
+  ],
+  cancel: [
+    () => { // ブー（不正解）
+      beep(200,'sawtooth',0.3,0.3,0);
+      beep(150,'sawtooth',0.2,0.2,0.15);
+    },
+    () => { // ガチャン（消去）
+      noise(0.05,0.3,0);
+      beep(300,'sawtooth',0.06,0.2,0.03);
+      beep(150,'sawtooth',0.08,0.2,0.06);
+    },
+    () => { // チッ（舌打ち風）
+      noise(0.03,0.4,0);
+      beep(400,'square',0.04,0.15,0.02);
+    },
+  ],
+  fanfare: [
+    () => { // 優勝ファンファーレ（昭和クイズ番組風）
+      [[523,0],[659,0.2],[784,0.4],[659,0.55],[784,0.7],[1047,0.85]].forEach(([f,t]) =>
+        beep(f,'square',0.18,0.3,t));
+      [[262,0],[330,0.2],[392,0.4]].forEach(([f,t]) =>
+        beep(f,'sawtooth',0.15,0.2,t));
+    },
+    () => { // ドカーン（花火）
+      noise(0.4,0.5,0);
+      [110,220,330,440].forEach((f,i) => beep(f,'sawtooth',0.3,0.3,i*0.05));
+      [523,659,784,1047,1318].forEach((f,i) => beep(f,'sine',0.2,0.25,0.3+i*0.1));
+    },
+    () => { // パパパパーン（ラッパ4連）
+      [[392,0],[392,0.15],[392,0.3],[523,0.5],[659,0.65],[784,0.8]].forEach(([f,t]) =>
+        beep(f,'sawtooth',0.13,0.28,t));
+    },
+  ],
+};
+
+function playSound(type) {
+  try {
+    if (AC.state === 'suspended') AC.resume();
+    const variants = SOUND_VARIANTS[type];
+    if (!variants) return;
+    const fn = variants[Math.floor(Math.random() * variants.length)];
+    fn();
+  } catch(e) {}
+}
+
+
+// ═══════════════════════════════════════════════
+// FIREBASE連携
+// ═══════════════════════════════════════════════
+
+// チームカラー（CSSVar解決済み）
+const TEAM_COLORS_HEX = {
+  a: '#c0141a', b: '#0a4a8a', c: '#1a6a1a',
+  d: '#8a4a00', e: '#6a0a6a', f: '#0a6a6a'
+};
+
+function fbActivate(qIndex, updateFirebase = false) {
+  // Firebaseに現在の問番号を送信（S2のときだけ）
+  if (updateFirebase && typeof window.fbSetCurrentQ === 'function') {
+    window.fbSetCurrentQ(qIndex);
+  }
+  // QRコード表示
+  showQR();
+  // 回答パネル表示
+  document.getElementById('fb-panel').classList.add('active');
+}
+
+function fbDeactivate() {
+  document.getElementById('fb-panel').classList.remove('active');
+  document.getElementById('qr-panel').classList.remove('active');
+}
+
+function showQR() {
+  const url = 'https://opanchuusagin-cmyk.github.io/oo-ou-quiz/oo-ou-answer%20(1).html';
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(url)}`;
+  document.getElementById('qr-img').src = qrSrc;
+  document.getElementById('qr-label').textContent = url;
+  document.getElementById('qr-panel').classList.add('active');
+}
+
+function renderFbAnswers(data) {
+  const grid = document.getElementById('fb-answers-grid');
+  const entries = Object.values(data || {});
+  if (entries.length === 0) {
+    grid.innerHTML = '<span style="color:var(--dim);font-size:12px">まだ回答なし...</span>';
+    return;
+  }
+  grid.innerHTML = entries.map(e => {
+    const team = TEAMS.find(t => t.id === e.teamId);
+    const color = team ? TEAM_COLORS_HEX[e.teamId] : '#888';
+    return `<div class="fb-answer-chip" style="border-color:${color}">
+      <span class="fb-chip-team" style="background:${color}">${team ? team.name : e.teamId}</span>
+      <span class="fb-chip-ans">${e.answer}</span>
+    </div>`;
+  }).join('');
+}
+
+
+// ═══════════════════════════════════════════════
+// 設定画面
+// ═══════════════════════════════════════════════
+
+function switchTab(tab) {
+  ['q','names','teams'].forEach(t => {
+    document.getElementById(`stab-${t}`).classList.toggle('active', t === tab);
+    document.getElementById(`stab-content-${t}`).style.display = t === tab ? 'block' : 'none';
+  });
+  if (tab === 'q')     renderSettingsQ();
+  if (tab === 'names') renderSettingsNames();
+  if (tab === 'teams') renderSettingsTeams();
+}
+
+function renderSettings() { switchTab('q'); }
+
+// ── TAB1: 問題・回答（ドラッグで順番変更） ──
+let dragSrcIdx = null;
+
+function renderSettingsQ() {
+  const list = document.getElementById('settings-q-list');
+  list.innerHTML = QUESTIONS.map((q, i) => `
+    <div class="settings-q-row" draggable="true"
+         id="sqrow-${i}"
+         ondragstart="dragQStart(event,${i})"
+         ondragover="dragQOver(event,${i})"
+         ondrop="dragQDrop(event,${i})"
+         ondragend="dragQEnd()">
+      <div class="drag-handle" title="ドラッグで並べ替え">⠿</div>
+      <div class="settings-q-num">Q${i+1}</div>
+      <div class="settings-q-target">${q.target}</div>
+      <input class="settings-input" type="text"
+        id="sq-${i}" value="${q.question}" placeholder="質問文">
+      <input class="settings-answer-input" type="text"
+        id="sa-${i}" value="${q.answer === '？' ? '' : q.answer}" placeholder="正解（任意）">
+    </div>
+  `).join('');
+}
+
+function dragQStart(e, i) {
+  dragSrcIdx = i;
+  e.dataTransfer.effectAllowed = 'move';
+  document.getElementById(`sqrow-${i}`).classList.add('dragging');
+}
+function dragQOver(e, i) {
+  e.preventDefault();
+  document.querySelectorAll('.settings-q-row').forEach(el => el.classList.remove('drag-over-q'));
+  if (i !== dragSrcIdx) document.getElementById(`sqrow-${i}`).classList.add('drag-over-q');
+}
+function dragQDrop(e, i) {
+  e.preventDefault();
+  if (dragSrcIdx === null || dragSrcIdx === i) return;
+  // 現在のinput値をQUESTIONSに反映してから並べ替え
+  QUESTIONS.forEach((q, idx) => {
+    const qv = document.getElementById(`sq-${idx}`);
+    const av = document.getElementById(`sa-${idx}`);
+    if (qv) q.question = qv.value.trim() || q.question;
+    if (av) q.answer   = av.value.trim() || '？';
+  });
+  const moved = QUESTIONS.splice(dragSrcIdx, 1)[0];
+  QUESTIONS.splice(i, 0, moved);
+  renderSettingsQ();
+}
+function dragQEnd() {
+  dragSrcIdx = null;
+  document.querySelectorAll('.settings-q-row').forEach(el => {
+    el.classList.remove('dragging','drag-over-q');
+  });
+}
+
+// ── TAB2: 氏名変更 ──
+// 全メンバーリストを作成（TEAMS + QUESTIONSのtargetを統合）
+function getAllMembers() {
+  const set = new Set();
+  TEAMS.forEach(t => t.members.forEach(m => set.add(m)));
+  QUESTIONS.forEach(q => set.add(q.target));
+  return [...set].sort();
+}
+
+function renderSettingsNames() {
+  const grid = document.getElementById('settings-names-grid');
+  const members = getAllMembers();
+  grid.innerHTML = members.map(m => `
+    <div class="name-row">
+      <div class="name-row-label">現在の名前</div>
+      <input class="name-row-input" type="text"
+        id="nm-${CSS.escape(m)}" value="${m}" data-orig="${m}"
+        placeholder="${m}">
+    </div>
+  `).join('');
+}
+
+function applyNameChanges() {
+  const inputs = document.querySelectorAll('.name-row-input');
+  inputs.forEach(input => {
+    const orig = input.dataset.orig;
+    const newName = input.value.trim();
+    if (!newName || newName === orig) return;
+    // TEAMSのメンバー更新
+    TEAMS.forEach(t => {
+      const idx = t.members.indexOf(orig);
+      if (idx !== -1) t.members[idx] = newName;
+    });
+    // QUESTIONSのtarget更新
+    QUESTIONS.forEach(q => {
+      if (q.target === orig) q.target = newName;
+    });
+    // TARGET_TEAMSのキー更新
+    if (TARGET_TEAMS[orig] !== undefined) {
+      TARGET_TEAMS[newName] = TARGET_TEAMS[orig];
+      delete TARGET_TEAMS[orig];
+    }
+  });
+}
+
+// ── TAB3: チーム編成（ドラッグ&ドロップ） ──
+let dragMember = null;
+let dragFromTeam = null;
+
+function renderSettingsTeams() {
+  const wrap = document.getElementById('settings-teams-wrap');
+  wrap.innerHTML = TEAMS.map(t => `
+    <div class="team-edit-card tec-${t.id}"
+         ondragover="teamDragOver(event,'${t.id}')"
+         ondrop="teamDrop(event,'${t.id}')">
+      <div class="team-edit-name">${t.name}</div>
+      <div class="team-member-list" id="tml-${t.id}">
+        ${t.members.map(m => `
+          <div class="team-member-item"
+               draggable="true"
+               ondragstart="teamDragStart(event,'${m}','${t.id}')">
+            <span>${m}</span>
+            <span style="color:var(--dim);font-size:11px">⠿</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function teamDragStart(e, member, teamId) {
+  dragMember  = member;
+  dragFromTeam = teamId;
+  e.dataTransfer.effectAllowed = 'move';
+}
+function teamDragOver(e, teamId) {
+  e.preventDefault();
+}
+function teamDrop(e, toTeamId) {
+  e.preventDefault();
+  if (!dragMember || dragFromTeam === toTeamId) return;
+  // fromチームから削除
+  const from = TEAMS.find(t => t.id === dragFromTeam);
+  const to   = TEAMS.find(t => t.id === toTeamId);
+  if (!from || !to) return;
+  from.members = from.members.filter(m => m !== dragMember);
+  to.members.push(dragMember);
+  // TARGET_TEAMS更新（対象者の場合）
+  if (TARGET_TEAMS[dragMember] !== undefined) {
+    TARGET_TEAMS[dragMember] = toTeamId;
+  }
+  dragMember = null; dragFromTeam = null;
+  renderSettingsTeams();
+}
+
+// ── 保存 ──
+function saveSettings() {
+  // TAB1: 問題・回答
+  QUESTIONS.forEach((q, i) => {
+    const qv = document.getElementById(`sq-${i}`);
+    const av = document.getElementById(`sa-${i}`);
+    if (qv && qv.value.trim()) q.question = qv.value.trim();
+    if (av) q.answer = av.value.trim() || '？';
+  });
+  // TAB2: 氏名
+  applyNameChanges();
+  // localStorage保存
+  try {
+    localStorage.setItem('oo_ou_questions', JSON.stringify(
+      QUESTIONS.map(q => ({ target: q.target, question: q.question, answer: q.answer }))
+    ));
+    localStorage.setItem('oo_ou_teams', JSON.stringify(
+      TEAMS.map(t => ({ id: t.id, members: t.members }))
+    ));
+    localStorage.setItem('oo_ou_target_teams', JSON.stringify(TARGET_TEAMS));
+  } catch(e) {}
+  showNotif('💾 保存しました！', 'var(--gold2)');
+  goPhase('teams');
+}
+
+// ── 保存済みデータ復元 ──
+function loadSavedSettings() {
+  try {
+    const sq = localStorage.getItem('oo_ou_questions');
+    if (sq) {
+      const arr = JSON.parse(sq);
+      // 順番も含めて復元
+      if (arr.length === QUESTIONS.length) {
+        arr.forEach((s, i) => {
+          if (s.target)   QUESTIONS[i].target   = s.target;
+          if (s.question) QUESTIONS[i].question = s.question;
+          if (s.answer)   QUESTIONS[i].answer   = s.answer;
+        });
+      }
+    }
+    const st = localStorage.getItem('oo_ou_teams');
+    if (st) {
+      const arr = JSON.parse(st);
+      arr.forEach(s => {
+        const t = TEAMS.find(t => t.id === s.id);
+        if (t && s.members) t.members = s.members;
+      });
+    }
+    const tt = localStorage.getItem('oo_ou_target_teams');
+    if (tt) {
+      const obj = JSON.parse(tt);
+      Object.assign(TARGET_TEAMS, obj);
+    }
+  } catch(e) {}
+}
+loadSavedSettings();
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+goPhase('teams');
+
+</script>
+</body>
+</html>
